@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Logistics Management Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <button class="brand-logo brand-logo-btn" onclick="openReadmeModal()">LP</button>
+      <div class="brand-text">
+        <h2>Logistics Platform</h2>
+        <p>Fleet Control Panel</p>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <button onclick="showPage('owner')" data-page="owner" class="active-menu">Owner Dashboard</button>
+    <button onclick="showPage('hr')" data-page="hr">HR/Admin</button>
+    <button onclick="showPage('employees')" data-page="employees">Employees</button>
+    <button onclick="showPage('drivers')" data-page="drivers">Drivers</button>
+    <button onclick="showPage('mechanics')" data-page="mechanics">Mechanics</button>
+    <button onclick="showPage('dispatch')" data-page="dispatch">Dispatch</button>
+    <button onclick="showPage('safety')" data-page="safety">Safety Compliance</button>
+    <button onclick="showPage('support')" data-page="support">Support</button>
+  </div>
+
+  <div class="main">
+
+    <div class="topbar">
+      <div>
+        <h2>Fleet Operations Dashboard</h2>
+        <p id="currentRole">Current Role: Owner</p>
+      </div>
+
+      <div class="topbar-actions">
+        <button id="primaryActionBtn" class="action-btn" onclick="openPrimaryActionWindow()">New Load</button>
+        <button id="reportActionBtn" class="action-btn secondary-btn" onclick="openReportWindow()">Generate Report</button>
+      </div>
+    </div>
+
+    <div id="owner" class="page">
+      <h1>Owner Dashboard</h1>
+
+      <div class="stats-grid">
+        <div class="stat-card clickable-card" onclick="showPage('dispatch')">
+          <h3>Active Loads</h3>
+          <p id="statActiveLoads">0</p>
+        </div>
+
+        <div class="stat-card clickable-card" onclick="showPage('drivers')">
+          <h3>Drivers on Road</h3>
+          <p id="statDriversOnRoad">0</p>
+        </div>
+
+        <div class="stat-card clickable-card" onclick="showPage('mechanics')">
+          <h3>Open Work Orders</h3>
+          <p id="statOpenWorkOrders">0</p>
+        </div>
+
+        <div class="stat-card clickable-card" onclick="showPage('safety')">
+          <h3>Safety Alerts</h3>
+          <p id="statSafetyAlerts">0</p>
+        </div>
+      </div>
+
+      <div class="map-box">
+        <h3>Live Fleet Tracking</h3>
+        <div class="fake-map">
+          <div class="truck truck1">Truck 12</div>
+          <div class="truck truck2">Truck 19</div>
+          <div class="truck truck3">Truck 27</div>
+        </div>
+      </div>
+
+      <canvas id="revenueChart"></canvas>
+
+      <div id="ownerInsights" class="role-grid"></div>
+    </div>
+
+    <div id="hr" class="page hidden">
+      <h1>HR/Admin Dashboard</h1>
+      <div id="hrCards" class="role-grid"></div>
+    </div>
+
+    <div id="employees" class="page hidden">
+      <h1>Employees Dashboard</h1>
+      <div id="employeesCards" class="role-grid"></div>
+    </div>
+
+    <div id="drivers" class="page hidden">
+      <h1>Drivers Dashboard</h1>
+      <div id="driversLoads" class="role-grid"></div>
+    </div>
+
+    <div id="mechanics" class="page hidden">
+      <h1>Mechanics Dashboard</h1>
+      <div id="mechanicsCards" class="role-grid"></div>
+    </div>
+
+    <div id="dispatch" class="page hidden">
+      <h1>Dispatch Dashboard</h1>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Load ID</th>
+            <th>Driver</th>
+            <th>Pickup</th>
+            <th>Delivery</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="dispatchTable"></tbody>
+      </table>
+
+      <div id="dispatchCards" class="role-grid"></div>
+    </div>
+
+    <div id="safety" class="page hidden">
+      <h1>Safety Compliance Dashboard</h1>
+      <div id="safetyCards" class="role-grid"></div>
+    </div>
+
+    <div id="support" class="page hidden">
+      <h1>Support Dashboard</h1>
+      <div id="supportCards" class="role-grid"></div>
+    </div>
+
+    <div id="aiChatBox" class="ai-chat-box">
+      <div class="ai-chat-header">
+        <span>AI Logistics Assistant</span>
+
+        <div class="ai-chat-controls">
+          <button class="chat-control-btn" onclick="toggleMinimize()" title="Minimize">−</button>
+          <button class="chat-control-btn" onclick="toggleExpand()" title="Expand">⛶</button>
+          <button class="chat-control-btn" onclick="closeChat()" title="Close">×</button>
+        </div>
+      </div>
+
+      <div id="aiChatBody" class="ai-chat-body">
+        <div id="chatMessages" class="ai-chat-messages">
+          <div class="ai-message">
+            Hello. I am your AI logistics assistant. Ask me about loads, drivers, safety, HR, dispatch, support, or maintenance.
+          </div>
+        </div>
+
+        <div class="ai-chat-input-area">
+          <input type="text" id="chatInput" placeholder="Ask something..." />
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <button id="chatLauncher" class="chat-launcher hidden" onclick="openChat()">
+      Open AI Assistant
+    </button>
+
+  </div>
+
+  <div id="primaryActionModal" class="modal-overlay hidden">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2 id="primaryActionTitle">Action</h2>
+        <button class="modal-close-btn" onclick="cancelPrimaryAction()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="primaryActionNote" class="modal-note"></div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label id="field1Label">Field 1</label>
+            <input type="text" id="field1Input" placeholder="">
+          </div>
+
+          <div class="form-group">
+            <label id="field2Label">Field 2</label>
+            <input type="text" id="field2Input" placeholder="">
+          </div>
+
+          <div class="form-group">
+            <label id="field3Label">Field 3</label>
+            <input type="text" id="field3Input" placeholder="">
+          </div>
+
+          <div class="form-group">
+            <label id="field4Label">Field 4</label>
+            <input type="text" id="field4Input" placeholder="">
+          </div>
+
+          <div class="form-group full-width">
+            <label id="field5Label">Details</label>
+            <textarea id="field5Input" placeholder=""></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="secondary-btn modal-btn" onclick="cancelPrimaryAction()">Cancel</button>
+        <button id="primaryActionSaveBtn" class="action-btn modal-btn" onclick="savePrimaryAction()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reportModal" class="modal-overlay hidden">
+    <div class="modal-window report-window">
+      <div class="modal-header">
+        <h2 id="reportTitle">Generated Report</h2>
+        <button class="modal-close-btn" onclick="closeReportWindow(true)">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="reportRoleNote" class="modal-note"></div>
+        <div id="reportContent" class="report-content"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="secondary-btn modal-btn" onclick="closeReportWindow(true)">Close</button>
+        <button class="action-btn modal-btn" onclick="printReport()">Print Report</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="readmeModal" class="modal-overlay hidden">
+    <div class="modal-window report-window">
+      <div class="modal-header">
+        <h2>Project README</h2>
+        <button class="modal-close-btn" onclick="closeReadmeModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-note">
+          This popup shows the project overview and submission summary.
+        </div>
+
+        <div class="report-content" id="readmeContent">
+          <div class="report-section">
+            <h3>Logistics Management Dashboard</h3>
+            <p>
+              This project is a role-based logistics and fleet management dashboard created as a school project.
+            </p>
+          </div>
+
+          <div class="report-section">
+            <h3>Roles Included</h3>
+            <ul class="report-list">
+              <li>Owners</li>
+              <li>HR/Admin</li>
+              <li>Employees</li>
+              <li>Drivers</li>
+              <li>Mechanics</li>
+              <li>Dispatch</li>
+              <li>Safety Compliance</li>
+              <li>Support</li>
+            </ul>
+          </div>
+
+          <div class="report-section">
+            <h3>Main Features</h3>
+            <ul class="report-list">
+              <li>Role-based dashboards</li>
+              <li>Shared data across modules</li>
+              <li>Owner analytics and smart AI insights</li>
+              <li>Dispatch and driver load tracking</li>
+              <li>HR complaint and investigation workflow</li>
+              <li>Mechanics work order tracking</li>
+              <li>Safety compliance records</li>
+              <li>Support ticket management</li>
+              <li>AI Logistics Assistant</li>
+              <li>Role-aware actions and report generation</li>
+            </ul>
+          </div>
+
+          <div class="report-section">
+            <h3>Technologies Used</h3>
+            <ul class="report-list">
+              <li>HTML</li>
+              <li>CSS</li>
+              <li>JavaScript</li>
+              <li>Chart.js</li>
+              <li>GitHub Pages</li>
+            </ul>
+          </div>
+
+          <div class="report-section">
+            <h3>Purpose</h3>
+            <p>
+              The purpose of this project is to demonstrate how a logistics company can manage fleet operations through a role-based dashboard system where each department accesses relevant data and workflows.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="secondary-btn modal-btn" onclick="closeReadmeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+
+</body>
+</html>
